@@ -1,329 +1,358 @@
+<?php
+/**
+ * Bloque PHP para conectar la base de datos MySQL (Migrada de XAMPP a InfinityFree)
+ *
+ * NOTA: Esta sección no tiene nada que ver con la lógica de la API de JavaScript.
+ * Es para operaciones PHP/MySQL directas, si las necesitas.
+ */
+
+// #######################################################
+// ### ⚠️ C O N F I G U R A C I Ó N   M Y S Q L ⚠️ ###
+// #######################################################
+
+// Variables de conexión para InfinityFree
+$servername = "sqlXXX.epizy.com";  // Reemplaza con tu host de InfinityFree
+$username = "epiz_XXXXXXXX";        // Reemplaza con tu usuario
+$password = "tu_contraseña_mysql";   // Reemplaza con tu contraseña
+$dbname = "epiz_XXXXXXXX_tu_db";     // Reemplaza con el nombre de tu base de datos
+
+// Crea la conexión
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Verifica la conexión
+if ($conn->connect_error) {
+    // Esto es útil para debug, pero expone información sensible.
+    // Deberías cambiarlo a un mensaje genérico en producción.
+    // die("Conexión fallida: " . $conn->connect_error); 
+    // Por ahora, solo imprime un error discreto para continuar con el HTML/JS
+    echo "<script>console.error('Error de conexión a la base de datos PHP.');</script>";
+} else {
+    // Si la conexión es exitosa, se puede usar $conn para consultas como:
+    // $sql = "SELECT * FROM productos LIMIT 10";
+    // $result = $conn->query($sql);
+    //
+    // Luego puedes usar los resultados de $result dentro del HTML si lo necesitas.
+    
+    // Cierra la conexión al final si ya no la necesitas.
+    // $conn->close();
+}
+
+// #######################################################
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechMarket - Productos Tecnológicos</title>
-    <!-- Tailwind CSS (CDN) para estilos rápidos y profesionales -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden-section { display: none; }
-        .active-section { display: block; }
-        .toast {
-            position: fixed; bottom: 20px; right: 20px; 
-            padding: 10px 20px; border-radius: 5px; color: white; 
-            font-weight: bold; z-index: 50; transition: opacity 0.5s;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechMarket - Productos Tecnológicos</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden-section { display: none; }
+        .active-section { display: block; }
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; 
+            padding: 10px 20px; border-radius: 5px; color: white; 
+            font-weight: bold; z-index: 50; transition: opacity 0.5s;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <!-- Navbar -->
-    <nav class="bg-blue-600 text-white p-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold cursor-pointer" onclick="navigate('home')">TechMarket 🚀</h1>
-            <div id="nav-links" class="space-x-4">
-                <!-- Se llenará dinámicamente -->
-            </div>
-        </div>
-    </nav>
+        <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold cursor-pointer" onclick="navigate('home')">TechMarket 🚀</h1>
+            <div id="nav-links" class="space-x-4">
+                            </div>
+        </div>
+    </nav>
 
-    <!-- Contenedor Principal -->
-    <div class="container mx-auto p-4 mt-4">
+        <div class="container mx-auto p-4 mt-4">
 
-        <!-- CONFIGURACIÓN API (Para GitHub Pages) -->
-        <div class="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded text-sm text-yellow-800">
-            <label class="font-bold">Backend URL:</label>
-            <input type="text" id="api-url-input" class="border p-1 rounded w-1/2" placeholder="http://127.0.0.1:8000">
-            <button onclick="saveApiUrl()" class="bg-yellow-600 text-white px-2 py-1 rounded">Guardar</button>
-            <p class="text-xs mt-1">Si despliegas en Railway, pon aquí tu URL (ej: https://tu-app.up.railway.app). Por defecto usa localhost.</p>
-        </div>
+                <div class="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded text-sm text-yellow-800">
+            <label class="font-bold">Backend URL:</label>
+            <input type="text" id="api-url-input" class="border p-1 rounded w-1/2" placeholder="http://127.0.0.1:8000">
+            <button onclick="saveApiUrl()" class="bg-yellow-600 text-white px-2 py-1 rounded">Guardar</button>
+            <p class="text-xs mt-1">Si despliegas en Railway, pon aquí tu URL (ej: https://tu-app.up.railway.app). Por defecto usa localhost.</p>
+        </div>
 
-        <!-- SECCIÓN: LISTA DE PRODUCTOS (HOME) -->
-        <div id="section-home" class="hidden-section">
-            <h2 class="text-3xl font-bold mb-6 text-gray-800">Últimos Lanzamientos</h2>
-            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Productos aquí -->
-            </div>
-        </div>
+                <div id="section-home" class="hidden-section">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">Últimos Lanzamientos</h2>
+            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            </div>
+        </div>
 
-        <!-- SECCIÓN: LOGIN -->
-        <div id="section-login" class="hidden-section max-w-md mx-auto bg-white p-8 rounded shadow">
-            <h2 class="text-2xl font-bold mb-4">Iniciar Sesión</h2>
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Email</label>
-                    <input type="email" id="login-email" class="w-full border p-2 rounded" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700">Contraseña</label>
-                    <input type="password" id="login-password" class="w-full border p-2 rounded" required>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Entrar</button>
-            </form>
-            <p class="mt-4 text-center">¿No tienes cuenta? <a href="#" onclick="navigate('register')" class="text-blue-500">Regístrate</a></p>
-        </div>
+                <div id="section-login" class="hidden-section max-w-md mx-auto bg-white p-8 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4">Iniciar Sesión</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Email</label>
+                    <input type="email" id="login-email" class="w-full border p-2 rounded" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700">Contraseña</label>
+                    <input type="password" id="login-password" class="w-full border p-2 rounded" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Entrar</button>
+            </form>
+            <p class="mt-4 text-center">¿No tienes cuenta? <a href="#" onclick="navigate('register')" class="text-blue-500">Regístrate</a></p>
+        </div>
 
-        <!-- SECCIÓN: REGISTRO -->
-        <div id="section-register" class="hidden-section max-w-md mx-auto bg-white p-8 rounded shadow">
-            <h2 class="text-2xl font-bold mb-4">Crear Cuenta</h2>
-            <form id="register-form" onsubmit="handleRegister(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Email</label>
-                    <input type="email" id="reg-email" class="w-full border p-2 rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700">Contraseña</label>
-                    <input type="password" id="reg-password" class="w-full border p-2 rounded" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700">Rol</label>
-                    <select id="reg-role" class="w-full border p-2 rounded">
-                        <option value="comprador">Comprador</option>
-                        <option value="vendedor">Vendedor</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Registrarse</button>
-            </form>
-        </div>
+                <div id="section-register" class="hidden-section max-w-md mx-auto bg-white p-8 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4">Crear Cuenta</h2>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Email</label>
+                    <input type="email" id="reg-email" class="w-full border p-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Contraseña</label>
+                    <input type="password" id="reg-password" class="w-full border p-2 rounded" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700">Rol</label>
+                    <select id="reg-role" class="w-full border p-2 rounded">
+                        <option value="comprador">Comprador</option>
+                        <option value="vendedor">Vendedor</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Registrarse</button>
+            </form>
+        </div>
 
-        <!-- SECCIÓN: AGREGAR PRODUCTO -->
-        <div id="section-add-product" class="hidden-section max-w-lg mx-auto bg-white p-8 rounded shadow">
-            <h2 class="text-2xl font-bold mb-4">Publicar Producto</h2>
-            <form id="add-product-form" onsubmit="handleAddProduct(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Nombre</label>
-                    <input type="text" id="prod-name" class="w-full border p-2 rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700">Precio ($)</label>
-                    <input type="number" step="0.01" id="prod-price" class="w-full border p-2 rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700">URL Imagen</label>
-                    <input type="text" id="prod-image" class="w-full border p-2 rounded" placeholder="https://ejemplo.com/foto.jpg">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700">Descripción</label>
-                    <textarea id="prod-desc" class="w-full border p-2 rounded"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700">Publicar</button>
-            </form>
-        </div>
+                <div id="section-add-product" class="hidden-section max-w-lg mx-auto bg-white p-8 rounded shadow">
+            <h2 class="text-2xl font-bold mb-4">Publicar Producto</h2>
+            <form id="add-product-form" onsubmit="handleAddProduct(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Nombre</label>
+                    <input type="text" id="prod-name" class="w-full border p-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Precio ($)</label>
+                    <input type="number" step="0.01" id="prod-price" class="w-full border p-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">URL Imagen</label>
+                    <input type="text" id="prod-image" class="w-full border p-2 rounded" placeholder="https://ejemplo.com/foto.jpg">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700">Descripción</label>
+                    <textarea id="prod-desc" class="w-full border p-2 rounded"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700">Publicar</button>
+            </form>
+        </div>
 
-        <!-- SECCIÓN: MIS PRODUCTOS (Vendedor) -->
-        <div id="section-my-products" class="hidden-section">
-            <h2 class="text-2xl font-bold mb-4">Mis Productos en Venta</h2>
-            <div id="my-products-list" class="space-y-4">
-                <!-- Lista para borrar -->
-            </div>
-        </div>
+                <div id="section-my-products" class="hidden-section">
+            <h2 class="text-2xl font-bold mb-4">Mis Productos en Venta</h2>
+            <div id="my-products-list" class="space-y-4">
+                            </div>
+        </div>
 
-    </div>
+    </div>
 
-    <!-- LOGIC JS -->
-    <script>
-        // --- CONFIGURACIÓN ---
-        let API_URL = localStorage.getItem('api_url') || 'http://127.0.0.1:8000';
-        document.getElementById('api-url-input').value = API_URL;
+        <script>
+        // --- CONFIGURACIÓN ---
+        let API_URL = localStorage.getItem('api_url') || 'http://127.0.0.1:8000';
+        document.getElementById('api-url-input').value = API_URL;
 
-        function saveApiUrl() {
-            const val = document.getElementById('api-url-input').value;
-            // Quitar barra final si existe
-            API_URL = val.endsWith('/') ? val.slice(0, -1) : val;
-            localStorage.setItem('api_url', API_URL);
-            showToast('URL Guardada', 'green');
-            fetchProducts();
-        }
+        function saveApiUrl() {
+            const val = document.getElementById('api-url-input').value;
+            // Quitar barra final si existe
+            API_URL = val.endsWith('/') ? val.slice(0, -1) : val;
+            localStorage.setItem('api_url', API_URL);
+            showToast('URL Guardada', 'green');
+            fetchProducts();
+        }
 
-        // --- ESTADO & NAVEGACIÓN ---
-        function getToken() { return localStorage.getItem('token'); }
-        function getRole() { return localStorage.getItem('role'); }
+        // --- ESTADO & NAVEGACIÓN ---
+        function getToken() { return localStorage.getItem('token'); }
+        function getRole() { return localStorage.getItem('role'); }
 
-        function navigate(sectionId) {
-            // Ocultar todas
-            document.querySelectorAll('.hidden-section, .active-section').forEach(el => {
-                el.classList.remove('active-section');
-                el.classList.add('hidden-section');
-            });
-            
-            // Mostrar seleccionada
-            const target = document.getElementById(`section-${sectionId}`);
-            if(target) {
-                target.classList.remove('hidden-section');
-                target.classList.add('active-section');
-            }
+        function navigate(sectionId) {
+            // Ocultar todas
+            document.querySelectorAll('.hidden-section, .active-section').forEach(el => {
+                el.classList.remove('active-section');
+                el.classList.add('hidden-section');
+            });
+            
+            // Mostrar seleccionada
+            const target = document.getElementById(`section-${sectionId}`);
+            if(target) {
+                target.classList.remove('hidden-section');
+                target.classList.add('active-section');
+            }
 
-            // Acciones al cargar sección
-            if(sectionId === 'home') fetchProducts();
-            if(sectionId === 'my-products') fetchMyProducts();
+            // Acciones al cargar sección
+            if(sectionId === 'home') fetchProducts();
+            if(sectionId === 'my-products') fetchMyProducts();
 
-            updateNavbar();
-        }
+            updateNavbar();
+        }
 
-        function updateNavbar() {
-            const nav = document.getElementById('nav-links');
-            const token = getToken();
-            const role = getRole();
+        function updateNavbar() {
+            const nav = document.getElementById('nav-links');
+            const token = getToken();
+            const role = getRole();
 
-            let html = `<a href="#" onclick="navigate('home')" class="hover:text-gray-200">Inicio</a>`;
+            let html = `<a href="#" onclick="navigate('home')" class="hover:text-gray-200">Inicio</a>`;
 
-            if (!token) {
-                html += `
-                    <a href="#" onclick="navigate('login')" class="hover:text-gray-200">Login</a>
-                    <a href="#" onclick="navigate('register')" class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100">Registro</a>
-                `;
-            } else {
-                if (role === 'vendedor' || role === 'admin') {
-                    html += `<a href="#" onclick="navigate('add-product')" class="hover:text-gray-200">Vender</a>`;
-                    html += `<a href="#" onclick="navigate('my-products')" class="hover:text-gray-200">Mis Productos</a>`;
-                }
-                html += `<button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-2">Salir</button>`;
-            }
-            nav.innerHTML = html;
-        }
+            if (!token) {
+                html += `
+                    <a href="#" onclick="navigate('login')" class="hover:text-gray-200">Login</a>
+                    <a href="#" onclick="navigate('register')" class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100">Registro</a>
+                `;
+            } else {
+                if (role === 'vendedor' || role === 'admin') {
+                    html += `<a href="#" onclick="navigate('add-product')" class="hover:text-gray-200">Vender</a>`;
+                    html += `<a href="#" onclick="navigate('my-products')" class="hover:text-gray-200">Mis Productos</a>`;
+                }
+                html += `<button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 ml-2">Salir</button>`;
+            }
+            nav.innerHTML = html;
+        }
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            navigate('login');
-            showToast('Sesión cerrada', 'blue');
-        }
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            navigate('login');
+            showToast('Sesión cerrada', 'blue');
+        }
 
-        function showToast(msg, color = 'blue') {
-            const div = document.createElement('div');
-            div.className = `toast bg-${color}-500`;
-            div.innerText = msg;
-            document.body.appendChild(div);
-            setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
-        }
+        function showToast(msg, color = 'blue') {
+            const div = document.createElement('div');
+            div.className = `toast bg-${color}-500`;
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
+        }
 
-        // --- API FETCH WRAPPERS ---
-        async function apiFetch(endpoint, method = 'GET', body = null) {
-            const headers = { 'Content-Type': 'application/json' };
-            const token = getToken();
-            if (token) headers['Authorization'] = `Bearer ${token}`;
+        // --- API FETCH WRAPPERS ---
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = getToken();
+            if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const config = { method, headers };
-            if (body) config.body = JSON.stringify(body);
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
 
-            try {
-                const res = await fetch(`${API_URL}${endpoint}`, config);
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || 'Error en la petición');
-                return data;
-            } catch (err) {
-                showToast(err.message, 'red');
-                throw err;
-            }
-        }
+            try {
+                const res = await fetch(`${API_URL}${endpoint}`, config);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Error en la petición');
+                return data;
+            } catch (err) {
+                showToast(err.message, 'red');
+                throw err;
+            }
+        }
 
-        // --- FUNCIONES CORE ---
+        // --- FUNCIONES CORE ---
 
-        // 1. Auth
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
+        // 1. Auth
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
 
-            // Form data para OAuth2
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', pass);
+            // Form data para OAuth2
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', pass);
 
-            try {
-                const res = await fetch(`${API_URL}/token`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: formData
-                });
-                const data = await res.json();
-                if(!res.ok) throw new Error(data.detail);
+            try {
+                const res = await fetch(`${API_URL}/token`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: formData
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.detail);
 
-                localStorage.setItem('token', data.access_token);
-                localStorage.setItem('role', data.role); // En prod decodificar JWT
-                showToast('Bienvenido!', 'green');
-                navigate('home');
-            } catch (err) {
-                showToast(err.message || 'Error login', 'red');
-            }
-        }
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('role', data.role); // En prod decodificar JWT
+                showToast('Bienvenido!', 'green');
+                navigate('home');
+            } catch (err) {
+                showToast(err.message || 'Error login', 'red');
+            }
+        }
 
-        async function handleRegister(e) {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            const role = document.getElementById('reg-role').value;
+        async function handleRegister(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-password').value;
+            const role = document.getElementById('reg-role').value;
 
-            try {
-                await apiFetch('/register', 'POST', { email, password: pass, role });
-                showToast('Usuario creado. Inicia sesión.', 'green');
-                navigate('login');
-            } catch (err) { console.error(err); }
-        }
+            try {
+                await apiFetch('/register', 'POST', { email, password: pass, role });
+                showToast('Usuario creado. Inicia sesión.', 'green');
+                navigate('login');
+            } catch (err) { console.error(err); }
+        }
 
-        // 2. Productos
-        async function fetchProducts() {
-            try {
-                const products = await apiFetch('/products');
-                const grid = document.getElementById('products-grid');
-                grid.innerHTML = products.map(p => `
-                    <div class="bg-white rounded shadow p-4 flex flex-col">
-                        <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="h-48 w-full object-cover rounded mb-4">
-                        <h3 class="font-bold text-lg">${p.name}</h3>
-                        <p class="text-gray-600 text-sm flex-grow">${p.description || ''}</p>
-                        <div class="mt-4 flex justify-between items-center">
-                            <span class="text-green-600 font-bold text-xl">$${p.price}</span>
-                            <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Ver</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) { console.error(err); }
-        }
+        // 2. Productos
+        async function fetchProducts() {
+            try {
+                const products = await apiFetch('/products');
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = products.map(p => `
+                    <div class="bg-white rounded shadow p-4 flex flex-col">
+                        <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="h-48 w-full object-cover rounded mb-4">
+                        <h3 class="font-bold text-lg">${p.name}</h3>
+                        <p class="text-gray-600 text-sm flex-grow">${p.description || ''}</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-green-600 font-bold text-xl">$${p.price}</span>
+                            <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Ver</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
 
-        async function handleAddProduct(e) {
-            e.preventDefault();
-            const body = {
-                name: document.getElementById('prod-name').value,
-                price: parseFloat(document.getElementById('prod-price').value),
-                image_url: document.getElementById('prod-image').value,
-                description: document.getElementById('prod-desc').value
-            };
-            try {
-                await apiFetch('/products', 'POST', body);
-                showToast('Producto publicado', 'green');
-                navigate('home');
-                e.target.reset();
-            } catch (err) { console.error(err); }
-        }
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('prod-name').value,
+                price: parseFloat(document.getElementById('prod-price').value),
+                image_url: document.getElementById('prod-image').value,
+                description: document.getElementById('prod-desc').value
+            };
+            try {
+                await apiFetch('/products', 'POST', body);
+                showToast('Producto publicado', 'green');
+                navigate('home');
+                e.target.reset();
+            } catch (err) { console.error(err); }
+        }
 
-        async function fetchMyProducts() {
-            try {
-                const products = await apiFetch('/my-products');
-                const list = document.getElementById('my-products-list');
-                list.innerHTML = products.map(p => `
-                    <div class="bg-white p-4 rounded shadow flex justify-between items-center">
-                        <div>
-                            <h4 class="font-bold">${p.name}</h4>
-                            <span class="text-sm text-gray-500">$${p.price}</span>
-                        </div>
-                        <button onclick="deleteProduct(${p.id})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Eliminar</button>
-                    </div>
-                `).join('');
-            } catch (err) { console.error(err); }
-        }
+        async function fetchMyProducts() {
+            try {
+                const products = await apiFetch('/my-products');
+                const list = document.getElementById('my-products-list');
+                list.innerHTML = products.map(p => `
+                    <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold">${p.name}</h4>
+                            <span class="text-sm text-gray-500">$${p.price}</span>
+                        </div>
+                        <button onclick="deleteProduct(${p.id})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Eliminar</button>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
 
-        async function deleteProduct(id) {
-            if(!confirm('¿Seguro que deseas eliminar este producto?')) return;
-            try {
-                await apiFetch(`/products/${id}`, 'DELETE');
-                showToast('Eliminado', 'red');
-                fetchMyProducts();
-            } catch (err) { console.error(err); }
-        }
+        async function deleteProduct(id) {
+            if(!confirm('¿Seguro que deseas eliminar este producto?')) return;
+            try {
+                await apiFetch(`/products/${id}`, 'DELETE');
+                showToast('Eliminado', 'red');
+                fetchMyProducts();
+            } catch (err) { console.error(err); }
+        }
 
-        // Init
-        navigate('home');
-    </script>
+        // Init
+        navigate('home');
+    </script>
 </body>
 </html>
